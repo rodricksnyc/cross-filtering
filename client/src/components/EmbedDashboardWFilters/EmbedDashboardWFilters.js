@@ -79,8 +79,10 @@ const EmbedDashboardWFilters = () => {
       LookerEmbedSDK.createDashboardWithId(id)
         // Adds the iframe to the DOM as a child of a specific element
         .appendTo(el)
+        .on("drillmenu:click")
         // Hides the filters in the embedded dashboard. Custom themes must be enabled on the Looker instance.
-        //.withParams({_theme: "{\"show_filters_bar\":false}"})
+        .withParams({_theme: "{\"show_filters_bar\":false}"})
+        
         // Performs the call to the auth service to get the iframe's src='' url, places it in the iframe and the client performs the request to Looker
         .build()
         // Establishes event communication between the iframe and parent page
