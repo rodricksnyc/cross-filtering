@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import styled from "styled-components";
 import { LookerEmbedSDK } from "@looker/embed-sdk";
 import { Space, SpaceVertical } from "@looker/components";
@@ -7,11 +7,15 @@ import { LoadingSpinner } from "../common/LoadingSpinner";
 import { sdk } from "../../helpers/CorsSessionHelper";
 import {
   Filter,
+  RangeModifier,
+  InputDateRange,
   i18nResources,
   ComponentsProvider,
   useSuggestable,
   useExpressionState,
 } from "@looker/filter-components";
+
+
 
 let dashboard = [];
 
@@ -25,11 +29,13 @@ const EmbedDashboardWFilters = () => {
   // State for the filter values, selected by the filter components located outside the embedded dashboard
   const [filterValues, setFilterValues] = React.useState({});
 
+  // const [value, setValue] = useState('June 3, 2019')
+
   // Looker API call using the API SDK to get all the available filters for the embedded dashboard
   useEffect(() => {
     const initialize = async () => {
-      const filters = await sdk.ok(sdk.dashboard(925, "dashboard_filters"));
-      console.log(filters["dashboard_filters"], "filters");
+      const filters = await sdk.ok(sdk.dashboard(923, "dashboard_filters", "listens_to_filters"));
+      console.log(filters["dashboard_filters"][0], "filters");
       setDashboardFilters(filters["dashboard_filters"]);
     };
     initialize();
@@ -98,7 +104,7 @@ const EmbedDashboardWFilters = () => {
       />
       <LoadingSpinner loading={loading} />
       <ComponentsProvider resources={i18nResources}>
-        <Space m="u3" align="end" width="auto">
+        <div style={{display: "flex", flexWrap: "wrap", justifyContent: "space-between"}}>
           {dashboardFilters?.map((filter) => {
             return (
               <DashFilters
@@ -109,20 +115,22 @@ const EmbedDashboardWFilters = () => {
               />
             );
           })}
-        </Space>
+        {/*<DashFilters2/>*/}
+
+        </div>
       </ComponentsProvider>
       {/* Step 0) we have a simple container, which performs a callback to our makeDashboard function */}
-      <br />
 
-      {[925, 927].map((id, index) => (
+
+<div style={{display:"grid",gridTemplateColumns: "50% 50%"}}>
+      {[923, 932].map((id, index) => (
         <div key={index}>
           <p>Dashboard {id}</p>
           <Dashboard ref={makeDashboard(id)}></Dashboard>
-          <br />
-          <br />
-          <br />
+
         </div>
       ))}
+</div>
     </div>
   );
 };
@@ -130,24 +138,17 @@ const EmbedDashboardWFilters = () => {
 // A little bit of style here for heights and widths.
 const Dashboard = styled.div`
   width: 100%;
-  height: 40vh;
+  height: 100%;
+  min-height:800px;
   bargin-bottom: 200px;
-  border: 1px solid purple;
+  border: 1px solid #dedede;
   & > iframe {
     width: 100%;
     height: 100%;
   }
 `;
 
-const Dashboard2 = styled.div`
-  width: 100%;
-  height: 40vh;
-  border: 1px solid purple;
-  & > iframe {
-    width: 100%;
-    height: 100%;
-  }
-`;
+
 export default EmbedDashboardWFilters;
 
 // Utilizes the more custom implementation of Looker filter components described in the filter components documentation.
@@ -178,14 +179,56 @@ export const DashFilters = ({ filter, expression, onChange }) => {
 
   return (
     <>
-      <FilterLabel>{filter.name}</FilterLabel>
-      <Filter
-        name={filter.name}
-        type={filter.type}
-        config={{ type: "dropdown_menu" }}
-        {...suggestableProps}
-        {...stateProps}
-      />
+    <div style={{margin:".5em 0em"}}>
+        <FilterLabel>{filter.name}</FilterLabel>
+        <Filter
+          name={filter.name}
+          type={filter.type}
+          config={{ type: ["button_group","dropdown_list"] }}
+          {...suggestableProps}
+          {...stateProps}
+        />
+      </div>
+
+    </>
+  );
+};
+
+
+
+export const DashFilters2 = ({ filter, expression, onChange, value, setValue }) => {
+  const stateProps = useExpressionState({
+    filter,
+    // These props will likely come from higher up in your application
+    expression,
+    onChange,
+  });
+
+  const { suggestableProps } = useSuggestable({
+    filter,
+    sdk,
+  });
+
+
+
+  const FilterLabel = styled.span`
+    font-family: inherit;
+    margin: 0px;
+    padding: 0px;
+    color: rgb(64, 70, 75);
+    font-size: 0.75rem;
+    font-weight: 500;
+    padding-bottom: 0.25rem;
+  `;
+
+  return (
+    <>
+    <div style={{margin:".5em 0em"}}>
+
+        <InputDateRange
+        value={value}/>
+      </div>
+
     </>
   );
 };
