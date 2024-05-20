@@ -15,6 +15,9 @@ import {
   useExpressionState,
 } from "@looker/filter-components";
 
+
+
+
 let dashboard = [];
 
 const EmbedDashboardWFilters = () => {
@@ -59,6 +62,11 @@ const EmbedDashboardWFilters = () => {
     setLoading(false);
   };
 
+  const canceller = (event) => {
+     return { cancel: !event.modal }
+   }
+
+
   /*
    Step 1 Initialization of the EmbedSDK happens when the user first access the application
    See App.js for reference
@@ -76,7 +84,18 @@ const EmbedDashboardWFilters = () => {
 
         .appendTo(el)
 
+        //
+        // .on("dashboard:filters:changed", (e) => {
+        //   console.log("Filters have been applied or changed.");
+        //   console.log(e);
+        // })
+
+        .on('drillmenu:click', canceller)
         .on("drillmenu:click", (e) => {
+
+          console.log(e)
+
+
           const url = e.url;
 
           const params = new URLSearchParams(
@@ -130,6 +149,7 @@ const EmbedDashboardWFilters = () => {
             display: "flex",
             flexWrap: "wrap",
             justifyContent: "space-between",
+            marginBottom:"2em"
           }}
         >
           {dashboardFilters?.map((filter) => {
@@ -147,7 +167,7 @@ const EmbedDashboardWFilters = () => {
       {/* Step 0) we have a simple container, which performs a callback to our makeDashboard function */}
 
       <div style={{ display: "grid", gridTemplateColumns: "50% 50%" }}>
-        {[923, 932].map((id, index) => (
+        {[935, 932].map((id, index) => (
           <div key={index}>
             <p>Dashboard {id}</p>
             <Dashboard ref={makeDashboard(id)}></Dashboard>
@@ -201,7 +221,7 @@ export const DashFilters = ({ filter, expression, onChange }) => {
 
   return (
     <>
-      <div style={{ margin: ".5em 0em" }}>
+      <div style={{ margin: ".5em 0em 1em 0em" }}>
         <FilterLabel>{filter.name}</FilterLabel>
         <Filter
           name={filter.name}
