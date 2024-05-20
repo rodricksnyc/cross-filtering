@@ -17,6 +17,7 @@ import {
 
 
 
+
 let dashboard = [];
 
 const EmbedDashboardWFilters = () => {
@@ -29,7 +30,8 @@ const EmbedDashboardWFilters = () => {
   // State for the filter values, selected by the filter components located outside the embedded dashboard
   const [filterValues, setFilterValues] = React.useState({});
 
-  // const [value, setValue] = useState('June 3, 2019')
+
+
 
   // Looker API call using the API SDK to get all the available filters for the embedded dashboard
   useEffect(() => {
@@ -79,10 +81,21 @@ const EmbedDashboardWFilters = () => {
       LookerEmbedSDK.createDashboardWithId(id)
         // Adds the iframe to the DOM as a child of a specific element
         .appendTo(el)
-        .on("drillmenu:click")
+
+      .on("drillmenu:click", (e) => {
+      console.log(
+        "A user has clicked on a drill menu in a dashboard that was created with the link LookML parameter."
+      );
+      console.log(e);
+    })
+
+
+    // .on("dashboard:filters:changed", (e) => {
+    //   console.log("Filters have been applied or changed.");
+    //   console.log(e);
+    // })
         // Hides the filters in the embedded dashboard. Custom themes must be enabled on the Looker instance.
         .withParams({_theme: "{\"show_filters_bar\":false}"})
-        
         // Performs the call to the auth service to get the iframe's src='' url, places it in the iframe and the client performs the request to Looker
         .build()
         // Establishes event communication between the iframe and parent page
@@ -117,7 +130,7 @@ const EmbedDashboardWFilters = () => {
               />
             );
           })}
-        {/*<DashFilters2/>*/}
+
 
         </div>
       </ComponentsProvider>
