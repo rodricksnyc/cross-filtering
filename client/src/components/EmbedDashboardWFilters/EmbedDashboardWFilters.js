@@ -15,9 +15,6 @@ import {
   useExpressionState,
 } from "@looker/filter-components";
 
-
-
-
 let dashboard = [];
 
 const EmbedDashboardWFilters = () => {
@@ -45,7 +42,6 @@ const EmbedDashboardWFilters = () => {
   // Set the new selected filter values in state, when selected using the components outside the dashboard
   const handleFilterChange = (newFilterValue, filterName) => {
     dashboard.forEach((dash) => {
-      // // Using the dashboard state, we are sending a message to the iframe to update the filters with the new values
       dash.send("dashboard:filters:update", {
         filters: {
           [filterName]: newFilterValue,
@@ -63,9 +59,8 @@ const EmbedDashboardWFilters = () => {
   };
 
   const canceller = (event) => {
-     return { cancel: !event.modal }
-   }
-
+    return { cancel: !event.modal };
+  };
 
   /*
    Step 1 Initialization of the EmbedSDK happens when the user first access the application
@@ -90,33 +85,23 @@ const EmbedDashboardWFilters = () => {
         //   console.log(e);
         // })
 
-        .on('drillmenu:click', canceller)
+        .on("drillmenu:click", canceller)
         .on("drillmenu:click", (e) => {
-
-          console.log(e)
-
-
           const url = e.url;
+          const filters = url.split("::")[1];
 
-          const params = new URLSearchParams(
-            url.substring(url.indexOf("?") + 1)
-          );
-          const queryParams = Object.fromEntries(params.entries());
+          const filterPairs = filters.split(",");
 
-          const filters = Object.keys(queryParams)
-            .filter((key) => key.startsWith("f"))
-            .reduce((obj, key) => {
-              let filterName = key.split(".").pop();
-              filterName = filterName.replace(/\]$/, "");
-              filterName = filterName.replace(/_/g, " ");
-              filterName = filterName.replace(/\b\w/g, (c) => c.toUpperCase());
-              obj[filterName] = queryParams[key];
-              return obj;
-            }, {});
+          const filterObject = {};
+
+          filterPairs.forEach((pair) => {
+            const [key, value] = pair.split("=");
+            filterObject[key] = value;
+          });
 
           dashboard.forEach((dash) => {
             dash.send("dashboard:filters:update", {
-              filters: filters,
+              filters: filterObject,
             });
             dash.send("dashboard:run");
           });
@@ -149,7 +134,7 @@ const EmbedDashboardWFilters = () => {
             display: "flex",
             flexWrap: "wrap",
             justifyContent: "space-between",
-            marginBottom:"2em"
+            marginBottom: "2em",
           }}
         >
           {dashboardFilters?.map((filter) => {
