@@ -15,6 +15,8 @@ import {
   useExpressionState,
 } from "@looker/filter-components";
 
+
+
 let dashboard = [];
 
 const EmbedDashboardWFilters = () => {
@@ -26,6 +28,7 @@ const EmbedDashboardWFilters = () => {
 
   // State for the filter values, selected by the filter components located outside the embedded dashboard
   const [filterValues, setFilterValues] = React.useState({});
+
 
   // Looker API call using the API SDK to get all the available filters for the embedded dashboard
   useEffect(() => {
@@ -110,7 +113,7 @@ const EmbedDashboardWFilters = () => {
         //   });
         // })
 
-        .withParams({ _theme: '{"show_filters_bar":false}' })
+        // .withParams({ _theme: '{"show_filters_bar":false}' })
         .build()
         .connect()
         .then((response) => {
@@ -244,6 +247,12 @@ export const DashFilters2 = ({
     filter,
     sdk,
   });
+
+
+
+    // const filterType = ["day_range_picker"]
+    //
+    // filterType.includes(filter.ui_config.type)
 
   const FilterLabel = styled.span`
     font-family: inherit;
