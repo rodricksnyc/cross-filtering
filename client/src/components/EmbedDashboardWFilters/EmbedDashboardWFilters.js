@@ -15,6 +15,9 @@ import {
   useExpressionState,
 } from "@looker/filter-components";
 
+import { Button, Form, Modal } from "react-bootstrap";
+
+
 let dashboard = [];
 
 const EmbedDashboardWFilters = () => {
@@ -26,6 +29,7 @@ const EmbedDashboardWFilters = () => {
 
   // State for the filter values, selected by the filter components located outside the embedded dashboard
   const [filterValues, setFilterValues] = React.useState({});
+
 
   // Looker API call using the API SDK to get all the available filters for the embedded dashboard
   useEffect(() => {
@@ -41,11 +45,6 @@ const EmbedDashboardWFilters = () => {
 
   // Set the new selected filter values in state, when selected using the components outside the dashboard
   const handleFilterChange = (newFilterValue, filterName) => {
-    setFilterValues((prevFilterValues) => ({
-      ...prevFilterValues,
-      [filterName]: newFilterValue,
-    }));
-
     dashboard.forEach((dash) => {
       dash.send("dashboard:filters:update", {
         filters: {
@@ -92,25 +91,27 @@ const EmbedDashboardWFilters = () => {
 
         .on("drillmenu:click", canceller)
         .on("drillmenu:click", (e) => {
-          const urlParams = new URLSearchParams(e.url.split("::")[1]);
-          for (const [key, value] of urlParams.entries()) {
-            handleFilterChange(value, key);
-          }
+          const url = e.url;
+          const filters = url.split("::")[1];
+
+          const filterPairs = filters.split(",");
+
+          const filterObject = {};
+
+          filterPairs.forEach((pair) => {
+            const [key, value] = pair.split("=");
+            filterObject[key] = value;
+          });
+
+          dashboard.forEach((dash) => {
+            dash.send("dashboard:filters:update", {
+              filters: filterObject,
+            });
+            dash.send("dashboard:run");
+          });
         })
-        // .on("drillmenu:click", (e) => {
-        //   const url = e.url;
-        //   const filters = url.split("::")[1];
 
-        //   const filterPairs = filters.split(",");
-
-        //   filterPairs.forEach((pair) => {
-        //     const [key, value] = pair.split("=");
-
-        //     handleFilterChange(value, key);
-        //   });
-        // })
-
-        .withParams({ _theme: '{"show_filters_bar":false}' })
+        // .withParams({ _theme: '{"show_filters_bar":false}' })
         .build()
         .connect()
         .then((response) => {
@@ -144,10 +145,8 @@ const EmbedDashboardWFilters = () => {
             return (
               <DashFilters
                 filter={filter}
-                filterValues={filterValues}
                 expression={filterValues[filter.name]}
                 onChange={(event) => handleFilterChange(event, filter.name)}
-                updateFilters={handleFilterChange}
                 key={filter.id}
               />
             );
@@ -168,6 +167,7 @@ const EmbedDashboardWFilters = () => {
   );
 };
 
+// A little bit of style here for heights and widths.
 const Dashboard = styled.div`
   width: 100%;
   height: 100%;
@@ -185,13 +185,14 @@ export default EmbedDashboardWFilters;
 // Utilizes the more custom implementation of Looker filter components described in the filter components documentation.
 // Refer to the Looker filter components documentation for more details:
 // https://github.com/looker-open-source/components/blob/HEAD/packages/filter-components/USAGE.md
-export const DashFilters = ({ filter, onChange, expression, filterValues }) => {
-  // const stateProps = useExpressionState({
-  //   filter,
-  //   // These props will likely come from higher up in your application
-  //   expression,
-  //   onChange: onChange,
-  // });
+export const DashFilters = ({ filter, expression, onChange }) => {
+  const stateProps = useExpressionState({
+    filter,
+    // These props will likely come from higher up in your application
+    expression,
+    onChange,
+  });
+
   const { suggestableProps } = useSuggestable({
     filter,
     sdk,
@@ -206,6 +207,7 @@ export const DashFilters = ({ filter, onChange, expression, filterValues }) => {
     font-weight: 500;
     padding-bottom: 0.25rem;
   `;
+
   return (
     <>
       <div style={{ margin: ".5em 0em 1em 0em" }}>
@@ -213,13 +215,9 @@ export const DashFilters = ({ filter, onChange, expression, filterValues }) => {
         <Filter
           name={filter.name}
           type={filter.type}
-          field={filter.field}
           config={{ type: ["button_group", "dropdown_list"] }}
           {...suggestableProps}
-          // {...stateProps}
-          key={filter.id}
-          filter={filter}
-          expression={filterValues[filter.name]}
+          {...stateProps}
         />
       </div>
     </>
@@ -244,6 +242,12 @@ export const DashFilters2 = ({
     filter,
     sdk,
   });
+
+
+
+    // const filterType = ["day_range_picker"]
+    //
+    // filterType.includes(filter.ui_config.type)
 
   const FilterLabel = styled.span`
     font-family: inherit;
